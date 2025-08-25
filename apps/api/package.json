@@ -1,0 +1,12 @@
+{
+  "name": "@tcpl-cpm/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo api dev",
+    "build": "echo api build",
+    "check-types": "tsc --noEmit",
+    "lint": "echo api lint",
+    "test": "echo api test"
+  }
+}

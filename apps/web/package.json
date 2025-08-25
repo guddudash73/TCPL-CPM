@@ -1,0 +1,12 @@
+{
+  "name": "@tcpl-cpm/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo web dev",
+    "build": "echo web build",
+    "check-types": "tsc --noEmit",
+    "lint": "echo web lint",
+    "test": "echo web test"
+  }
+}
