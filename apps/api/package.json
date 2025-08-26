@@ -3,10 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "echo api dev",
-    "build": "echo api build",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
     "check-types": "tsc --noEmit",
     "lint": "echo api lint",
     "test": "echo api test"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.14.0",
+    "prisma": "^6.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }
