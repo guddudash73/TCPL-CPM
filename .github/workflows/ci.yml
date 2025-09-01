@@ -1,0 +1,75 @@
+name: CI (monorepo / turbo)
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    env:
+      TURBO_CACHE_DIR: .turbo
+      TURBO_FILTER: "...[origin/main]"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json', 'turbo.json') }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
+      - name: Install (workspaces)
+        run: npm ci
+
+      - name: Prisma generate (apps/api)
+        run: npm run db:generate -w apps/api
+
+      - name: Lint (affected)
+        run: npx turbo run lint --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
+
+      - name: check-types (affected)
+        run: npx turbo run check-types --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
+
+      - name: Test (affected)
+        run: npx turbo run test --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
+
+      - name: Build (affected)
+        run: npx turbo run build --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
+
+      - name: Upload API dist
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-dist
+          path: apps/api/dist
+          if-no-files-found: warn
+
+      - name: Save Turbo cache
+        if: always()
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json', 'turbo.json') }}

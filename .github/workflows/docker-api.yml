@@ -1,0 +1,64 @@
+name: Docker (apps/api)
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: docker-api-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/tcpl-cpm-api
+  TURBO_SCOPE: "@tcpl-cpm/api"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tag
+        id: meta
+        run: |
+          SHA_TAG=${GITHUB_SHA::7}
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+          echo "tags=${IMAGE_NAME}:${GITHUB_REF_NAME},${IMAGE_NAME}:latest" >> $GITHUB_OUTPUT
+          else
+          echo "tags=${IMAGE_NAME}:${SHA_TAG}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build & (maybe) push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          build-args: |
+            TURBO_SCOPE=${{ env.TURBO_SCOPE }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
