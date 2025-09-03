@@ -1,5 +1,11 @@
 # @tcpl-cpm/api
 
+## 0.0.3
+
+### Patch Changes
+
+- [`1a8af31`](https://github.com/guddudash73/TCPL-CPM/commit/1a8af31dddfc665b5ae7038d89223525ede2a6d5) Thanks [@guddudash73](https://github.com/guddudash73)! - this is for the test
+
 ## 0.0.2
 
 ### Patch Changes
