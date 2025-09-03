@@ -7,6 +7,6 @@
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["tcpl-cpm"],
+  "ignore": [],
   "privatePackages": { "version": true, "tag": false }
 }
