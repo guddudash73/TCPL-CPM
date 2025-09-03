@@ -17,7 +17,7 @@
     "test": "turbo test",
     "changeset": "changeset",
     "version-package": "changeset version",
-    "release": "echo 'Docker image are build by Github Actions on tag push"
+    "release": "echo 'Docker image are build by Github Actions on tag push'"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.7",
