@@ -14,9 +14,13 @@
     "build:api:docker": "docker build -f apps/api/Dockerfile --build-arg TURBO_SCOPE=@tcpl-cpm/api -t tcpl-cpm-api:local .",
     "typecheck": "turbo check-types",
     "lint": "turbo lint",
-    "test": "turbo test"
+    "test": "turbo test",
+    "changeset": "changeset",
+    "version-package": "changeset version",
+    "release": "echo 'Docker image are build by Github Actions on tag push"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.6",
     "turbo": "^2.5.6"
   }
 }
