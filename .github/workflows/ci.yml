@@ -1,4 +1,4 @@
-name: build-test
+name: CI (monorepo / turbo)
 
 on:
   pull_request:
