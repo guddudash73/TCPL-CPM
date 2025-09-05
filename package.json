@@ -6,13 +6,17 @@
     "apps/*",
     "packages/*"
   ],
+  "engines": {
+    "node": ">=18.18.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "ci": "turbo run lint typecheck test build --continue --cache-dir=.turbo",
-    "ci:affected": "turbo run lint typecheck test build --continue --cache-dir=.turbo --filter=...[origin/main]",
+    "ci": "turbo run lint check-types test build --continue --cache-dir=.turbo",
+    "ci:affected": "turbo run lint check-types test build --continue --cache-dir=.turbo --filter=...[origin/main]",
     "build:api:docker": "docker build -f apps/api/Dockerfile --build-arg TURBO_SCOPE=@tcpl-cpm/api -t tcpl-cpm-api:local .",
-    "typecheck": "turbo check-types",
+    "check-types": "turbo check-types",
     "lint": "turbo lint",
     "test": "turbo test"
   },

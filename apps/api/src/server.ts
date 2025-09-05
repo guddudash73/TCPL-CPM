@@ -3,8 +3,9 @@ import "dotenv/config";
 import http from "http";
 import { createApp } from "./app";
 import { prisma } from "./lib/prisma";
+import { env } from "@tcpl-cpm/config";
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
+const PORT = env.PORT;
 
 async function main() {
   const app = createApp();

@@ -1,5 +1,7 @@
+name: tcpl-cpm
 services:
   api:
+    image: tcpl-cpm
     build:
       context: ../..
       dockerfile: apps/api/Dockerfile
