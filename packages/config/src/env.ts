@@ -12,6 +12,8 @@ const normalizeAppEnv = (v: unknown) => {
   return s; // local | staging | production (already lowercase)
 };
 
+const positiveInt = z.coerce.number().int().positive();
+
 const envSchema = z.object({
   NODE_ENV: z
     .preprocess(toLower, z.enum(["development", "test", "production"]))
@@ -25,6 +27,13 @@ const envSchema = z.object({
 
   DATABASE_URL: z.string().url(),
   PRISMA_DATABASE_URL: z.string().url().optional(),
+
+  JWT_SECRET: z.string().min(32, "JWT_SECRET should be at least 32 characters"),
+  JWT_EXPIRES_IN: z.string().default("15m"),
+  REFRESH_TOKEN_TTL: z.string().default("30d"),
+  BCRYPT_COST: positiveInt.default(12),
+  TOKEN_HASH_PEPPER: z.string().optional(),
+  SESSION_MAX_CONCURRENT: positiveInt.default(10),
 });
 
 export const env = envSchema.parse(process.env);
