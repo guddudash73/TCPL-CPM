@@ -29,11 +29,12 @@ model Role {
 
 model User {
   id  String @id @default(cuid())
-  email String @unique
+  email String
   emailLower String @unique
   passwordHash String @map("password")
   roleId String
   role Role @relation(fields: [roleId], references: [id])
+  name String
   status UserStatus @default(ACTIVE)
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
@@ -61,7 +62,7 @@ model Session {
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

@@ -35,16 +35,22 @@ async function upsertRoles() {
   return roles;
 }
 
-async function upsertUser(email: string, password: string, roleName: string) {
+async function upsertUser(
+  email: string,
+  password: string,
+  roleName: string,
+  name: string
+) {
   const emailLower = email.toLowerCase();
   const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
 
   return prisma.user.upsert({
-    where: { email },
+    where: { emailLower },
     update: {},
     create: {
       email,
       emailLower,
+      name,
       passwordHash,
       role: { connect: { name: roleName } }, // Role.name is unique
     },
@@ -75,12 +81,22 @@ async function main() {
   await upsertRoles();
 
   // Admin
-  await upsertUser("admin@tecnoglance.com", "admin123", "ADMIN");
+  await upsertUser("admin@tecnoglance.com", "admin123", "ADMIN", "admin");
 
   // Extra users for quick testing
-  await upsertUser("pm@tecnoglance.com", "pm123", "PROJECT_MANAGER");
-  await upsertUser("engineer@tecnoglance.com", "eng123", "SITE_ENGINEER");
-  await upsertUser("viewer@tecnoglance.com", "view123", "VIEWER");
+  await upsertUser(
+    "pm@tecnoglance.com",
+    "pm123",
+    "PROJECT_MANAGER",
+    "project manager"
+  );
+  await upsertUser(
+    "engineer@tecnoglance.com",
+    "eng123",
+    "SITE_ENGINEER",
+    "engineer"
+  );
+  await upsertUser("viewer@tecnoglance.com", "view123", "VIEWER", "viewer");
 
   await upsertProjects();
 }

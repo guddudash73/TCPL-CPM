@@ -14,7 +14,8 @@
     "db:migrate:create": "prisma migrate dev --create-only --name auth_schema",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force --skip-seed"
   },
   "dependencies": {
     "@tcpl-cpm/config": "file:../../packages/config",
