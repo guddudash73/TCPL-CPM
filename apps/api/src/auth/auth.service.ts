@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { LoginBody } from "./auth.schema";
 import { signAccess, signRefresh, verifyRefresh, parseTtlToMs } from "./jwt";
+import { createHash } from "crypto";
 
 type SessionLite = { id: string };
 
@@ -21,13 +22,17 @@ function pepper() {
   return process.env.TOKEN_HASH_PEPPER || "";
 }
 
+function sha256b64(s: string) {
+  return createHash("sha256").update(s).digest("base64");
+}
+
 async function hashToken(raw: string) {
   const cost = getBcryptCost();
-  return bcrypt.hash(raw + pepper(), cost);
+  return bcrypt.hash(sha256b64(raw) + pepper(), cost);
 }
 
 async function compareToken(raw: string, hash: string) {
-  return bcrypt.compare(raw + pepper(), hash);
+  return bcrypt.compare(sha256b64(raw) + pepper(), hash);
 }
 
 // async function enforceSessionCap(userId: string, now: Date) {
@@ -138,13 +143,13 @@ export async function login(input: LoginBody, userAgent?: string, ip?: string) {
 }
 
 export async function rotateRefresh(
-  presentedRefreshToken: string,
+  presentRefreshToken: string,
   userAgent?: string,
   ip?: string
 ) {
   let claims: { sub: string; sid: string; typ: "refresh" };
   try {
-    claims = verifyRefresh(presentedRefreshToken);
+    claims = verifyRefresh(presentRefreshToken);
   } catch {
     return null;
   }
@@ -163,10 +168,17 @@ export async function rotateRefresh(
     return null;
 
   const valid = await compareToken(
-    presentedRefreshToken,
+    presentRefreshToken,
     session.refreshTokenHash
   );
-  if (!valid) return null;
+
+  if (!valid) {
+    await prisma.session.update({
+      where: { id: session.id },
+      data: { revokedAt: new Date(), revokedByIp: ip ?? null },
+    });
+    return null;
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },

@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { createUserController } from "./users.controller";
+import { requireAuth } from "../../middlewares/requireAuth";
+import { requireRole } from "../../middlewares/requireRole";
 
 const router = Router();
 
-// W2D4: router.post("/", requireAuth, requireRole("ADMIN"), createUserController);
-
-router.post("/", createUserController);
+router.post("/", requireAuth, requireRole("ADMIN"), createUserController);
 
 export default router;

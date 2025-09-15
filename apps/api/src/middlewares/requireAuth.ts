@@ -13,7 +13,7 @@ declare global {
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authz = req.header("authorization") || req.header("Authorization");
-  if (!authz || !authz.toLowerCase().startsWith("border ")) {
+  if (!authz || !authz.toLowerCase().startsWith("bearer ")) {
     return res.status(401).json({ message: "missing bearer token" });
   }
   const token = authz.slice(7).trim();

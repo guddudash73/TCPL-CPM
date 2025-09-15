@@ -1,7 +1,13 @@
-// packages/config/src/env.ts
 import { z } from "zod";
 
 const toLower = (v: unknown) => (typeof v === "string" ? v.toLowerCase() : v);
+
+const msLike = z
+  .string()
+  .regex(
+    /^\d+(ms|s|m|h|d|w)$/,
+    "Must be a valid ms-style duration, e.g. 15m or 7d"
+  );
 
 // Normalize common synonyms so we accept both dev/prod variants
 const normalizeAppEnv = (v: unknown) => {
@@ -29,8 +35,8 @@ const envSchema = z.object({
   PRISMA_DATABASE_URL: z.string().url().optional(),
 
   JWT_SECRET: z.string().min(32, "JWT_SECRET should be at least 32 characters"),
-  JWT_EXPIRES_IN: z.string().default("15m"),
-  REFRESH_TOKEN_TTL: z.string().default("30d"),
+  JWT_EXPIRES_IN: msLike.default("15m"),
+  REFRESH_TOKEN_TTL: msLike.default("30d"),
   BCRYPT_COST: positiveInt.default(12),
   TOKEN_HASH_PEPPER: z.string().optional(),
   SESSION_MAX_CONCURRENT: positiveInt.default(10),

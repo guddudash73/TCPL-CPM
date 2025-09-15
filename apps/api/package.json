@@ -13,8 +13,11 @@
     "db:migrate:create": "prisma migrate dev --create-only --name auth_schema",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "tsx apps/api/prisma/seed.ts",
     "db:reset": "prisma migrate reset --force --skip-seed"
+  },
+  "prisma": {
+    "seed": "tsx apps/api/prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
@@ -23,6 +26,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
