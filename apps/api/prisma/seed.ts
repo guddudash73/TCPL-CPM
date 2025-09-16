@@ -97,6 +97,7 @@ async function main() {
     "engineer"
   );
   await upsertUser("viewer@tecnoglance.com", "view123", "VIEWER", "viewer");
+  await upsertUser("viewer2@tecnoglance.com", "view123", "VIEWER", "viewer2");
 
   await upsertProjects();
 }

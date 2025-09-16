@@ -5,7 +5,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true,
-    "noEmit": false
+    "noEmit": false,
+    "types": ["node", "jest"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
