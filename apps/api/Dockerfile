@@ -53,6 +53,7 @@ ENV NODE_ENV=production
 
 # Copy production node_modules with a generated Prisma Client
 COPY --from=proddeps /repo/node_modules ./node_modules
+# COPY --from=proddeps /repo/apps/api/node_modules ./apps/api/node_modules
 
 # Copy built output
 COPY --from=builder /repo/apps/api/dist ./apps/api/dist

@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { LoginBody } from "./auth.schema";
 import { signAccess, signRefresh, verifyRefresh, parseTtlToMs } from "./jwt";
 import { createHash } from "crypto";
@@ -243,9 +244,8 @@ export async function revokeSession(sessionId: string, byIp?: string) {
       data: { revokedAt: new Date(), revokedByIp: byIp ?? null },
     });
     return true;
-  } catch (e) {
-    if ((e as Prisma.PrismaClientKnownRequestError).code === "P2025")
-      return false;
+  } catch (e: unknown) {
+    if ((e as PrismaClientKnownRequestError).code === "P2025") return false;
     throw e;
   }
 }

@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@tcpl-cpm/api": "^0.0.0",
-    "dotenv": "^17.2.2",
+    "dotenv": "^16.6.1",
     "turbo": "^2.5.6"
   }
 }

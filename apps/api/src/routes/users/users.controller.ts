@@ -1,10 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
-import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { createUserInputSchema, createUserOutputSchema } from "./users.schema";
 import { createUserByAdmin } from "./users.service";
-
-// TODO(W2D4): protect with requireAdmin once RBAC is in place
 
 export async function createUserController(
   req: Request,
@@ -31,7 +29,7 @@ export async function createUserController(
         .status(400)
         .json({ ok: false, message: "Invalid request", issues: err.issues });
     }
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err instanceof PrismaClientKnownRequestError) {
       if (err.code === "P2002") {
         return res
           .status(409)
