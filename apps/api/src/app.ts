@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import routes from "./routes";
 import { errorHandler } from "./middlewares/error";
+import { jsonReplacer } from "./lib/json";
 
 export function createApp() {
   const app = express();
@@ -12,6 +13,7 @@ export function createApp() {
   app.use(cors({ origin: true, credentials: true }));
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true }));
+  app.set("json replacer", jsonReplacer);
 
   app.use(
     morgan("dev", {

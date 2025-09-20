@@ -12,11 +12,14 @@ router.get("/livez", (_req, res) => {
 });
 
 router.get("/readyz", async (_req, res) => {
+  const started = Date.now();
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ ok: true, db: "up" });
+    const durationMs = Date.now() - started;
+    res.json({ ok: true, db: "up", durationMs });
   } catch {
-    res.status(503).json({ ok: false, db: "down" });
+    const durationMs = Date.now() - started;
+    res.status(503).json({ ok: false, db: "down", durationMs });
   }
 });
 
