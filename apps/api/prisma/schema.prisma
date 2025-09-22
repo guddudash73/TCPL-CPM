@@ -47,11 +47,11 @@ enum Unit {
   DAY
 }
 
-// enum Currency {
-//   INR
-//   USD
-//   EUR
-// }
+enum Currency {
+  INR
+  USD
+  EUR
+}
 
 model Role {
   id String @id @default(cuid())
@@ -87,14 +87,14 @@ model Project {
   status ProjectStatus @default(PLANNING)
   startDate DateTime?
   endDate DateTime?
-  currency String @default("INR")
+  currency Currency @default(INR)
   budgetRupees BigInt @default(0)
   addressLine1 String?
   addressLine2 String?
   city String?
   state String?
   pincode String?
-  country String? @default("India")
+  country String? @default("IN")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -152,7 +152,7 @@ model Meterial {
   sku String @unique
   name String 
   unit Unit
-  description String
+  description String?
   active Boolean @default(true)
   
   createdAt DateTime @default(now())
