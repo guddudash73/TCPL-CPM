@@ -129,10 +129,11 @@ model Stage {
   code String
   name String
   status StageStatus @default(NOT_STARTED)
+  description String?
   sortOrder Int @default(0)
   plannedStart DateTime?
   plannedEnd DateTime?
-  actuaStart DateTime?
+  actualStart DateTime?
   actualEnd DateTime?
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
