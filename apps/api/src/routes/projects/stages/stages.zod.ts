@@ -23,7 +23,7 @@ export const StageCreateSchema = z.object({
 
 export const stageUpdateSchema = StageCreateSchema.partial();
 
-export const StageListSchema = z.object({
+export const StageListQuerySchema = z.object({
   q: z.string().trim().optional(),
   status: z.nativeEnum(StageStatus).optional(),
   page: z.coerce.number().int().positive().default(1),

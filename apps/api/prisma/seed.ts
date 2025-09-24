@@ -57,25 +57,25 @@ async function upsertUser(
   });
 }
 
-async function upsertProjects() {
-  await prisma.project.upsert({
-    where: { name: "Sample Project" },
-    update: {},
-    create: {
-      name: "Sample Project",
-      description: "test-1 project for TCPL-CPM",
-    },
-  });
+// async function upsertProjects() {
+//   await prisma.project.upsert({
+//     where: { name: "Sample Project" },
+//     update: {},
+//     create: {
+//       name: "Sample Project",
+//       description: "test-1 project for TCPL-CPM",
+//     },
+//   });
 
-  await prisma.project.upsert({
-    where: { name: "Phase-2 Expansion" },
-    update: {},
-    create: {
-      name: "Phase-2 Expansion",
-      description: "additional sample project for demos",
-    },
-  });
-}
+  // await prisma.project.upsert({
+  //   where: { name: "Phase-2 Expansion" },
+  //   update: {},
+  //   create: {
+  //     name: "Phase-2 Expansion",
+  //     description: "additional sample project for demos",
+  //   },
+  // });
+// }
 
 async function main() {
   await upsertRoles();
@@ -99,7 +99,7 @@ async function main() {
   await upsertUser("viewer@tecnoglance.com", "view123", "VIEWER", "viewer");
   await upsertUser("viewer2@tecnoglance.com", "view123", "VIEWER", "viewer2");
 
-  await upsertProjects();
+  // await upsertProjects();
 }
 
 main()

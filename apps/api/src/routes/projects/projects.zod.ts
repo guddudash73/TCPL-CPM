@@ -27,6 +27,7 @@ export const ProjectCreateSchema = z.object({
   state: z.string().max(128).optional().nullable(),
   pincode: z.string().max(32).optional().nullable(),
   country: z.string().max(64).optional().nullable(),
+  projectManagerUserId: z.string().min(1).optional(),
 });
 
 export const ProjectUpdateSchema = ProjectCreateSchema.partial();

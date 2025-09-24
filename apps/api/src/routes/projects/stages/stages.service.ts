@@ -71,7 +71,7 @@ export const stagesService = {
       status?: StageStatus;
       description?: string;
       parentId?: string;
-      shortOrder?: number;
+      sortOrder?: number;
       plannedStart?: Date;
       plannedEnd?: Date;
       actualStart?: Date;
@@ -83,9 +83,10 @@ export const stagesService = {
         where: { projectId },
         _max: { sortOrder: true },
       });
+
       const appendOrder = (currentMax._max.sortOrder ?? 0) + 1;
 
-      let desired = input.shortOrder;
+      let desired = input.sortOrder;
       if (!desired || desired > appendOrder) desired = appendOrder;
 
       if (desired <= appendOrder - 1) {
@@ -149,10 +150,19 @@ export const stagesService = {
               _max: { sortOrder: true },
             })
           )._max.sortOrder ?? existing.sortOrder;
+
         if (targetOrder < 1) targetOrder = 1;
         if (targetOrder > maxOrder) targetOrder = maxOrder;
 
         if (targetOrder < existing.sortOrder) {
+          await tx.stage.updateMany({
+            where: {
+              projectId,
+              sortOrder: { gte: targetOrder, lte: existing.sortOrder },
+            },
+            data: { sortOrder: { increment: 1 } },
+          });
+        } else if (targetOrder > existing.sortOrder) {
           await tx.stage.updateMany({
             where: {
               projectId,

@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import type { ListQuery } from "./projects.zod";
-import type { ProjectStatus, Currency } from "@prisma/client";
+import { type ProjectStatus, type Currency, Prisma } from "@prisma/client";
 
 const baseSelect = {
   id: true,
@@ -84,14 +84,62 @@ export const ProjectsService = {
     });
   },
 
-  async create(data: CreateData) {
-    return prisma.project.create({
-      data: {
-        ...data,
-        startDate: toDate(data.startDate),
-        endDate: toDate(data.endDate),
-      },
-      select: baseSelect,
+  async create(data: CreateData, opts?: { projectManagerUserId?: string }) {
+    return prisma.$transaction(async (tx) => {
+      const project = await tx.project.create({
+        data: {
+          ...data,
+          startDate: toDate(data.startDate),
+          endDate: toDate(data.endDate),
+        },
+        select: baseSelect,
+      });
+
+      if (opts?.projectManagerUserId) {
+        const pmRole = await tx.role.findUnique({
+          where: { name: "PROJECT_MANAGER" },
+          select: { id: true },
+        });
+        if (!pmRole) {
+          const err: any = new Error("DB validatiion");
+          err.code = "P2000";
+          err.meta = {
+            userMessage: 'Required role "PROJECT_MANAGER" not found',
+          };
+          throw err;
+        }
+
+        const user = await tx.user.findUnique({
+          where: { id: opts.projectManagerUserId },
+          select: { id: true },
+        });
+        if (!user) {
+          const err: any = new Error("DB validatiion");
+          err.code = "P2000";
+          err.meta = {
+            userMessage: "Selected projectManagerUserId does not exist",
+          };
+          throw err;
+        }
+
+        await tx.projectMember.upsert({
+          where: {
+            projectId_userId: {
+              projectId: project.id,
+              userId: opts.projectManagerUserId,
+            },
+          },
+          update: {
+            projectId: project.id,
+          },
+          create: {
+            projectId: project.id,
+            userId: opts.projectManagerUserId,
+            roleId: pmRole.id,
+          },
+        });
+      }
+      return project;
     });
   },
 

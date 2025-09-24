@@ -1,26 +1,28 @@
 import type { Request, Response, NextFunction } from "express";
-import { ProjectsService } from "./projects.service";
 import {
-  ListQuerySchema,
-  ProjectCreateSchema,
-  ProjectUpdateSchema,
-} from "./projects.zod";
+  StageCreateSchema,
+  StageListQuerySchema,
+  stageUpdateSchema,
+} from "./stages.zod";
+import { stagesService } from "./stages.service";
 
-export const ProjectsController = {
+export const StagesController = {
   async list(req: Request, res: Response, next: NextFunction) {
-    const parsed = ListQuerySchema.safeParse(req.query);
+    const parsed = StageListQuerySchema.safeParse(req.query);
     if (!parsed.success) {
       return res.status(400).json({
         ok: false,
         code: "BAD_REQUEST",
-        message: "Invalid query params",
         details: parsed.error.flatten(),
       });
     }
     try {
-      const { rows, total } = await ProjectsService.list(parsed.data);
+      const { data, total } = await stagesService.list(
+        req.params.projectId,
+        parsed.data
+      );
       return res.json({
-        data: rows,
+        data,
         meta: { page: parsed.data.page, limit: parsed.data.limit, total },
       });
     } catch (e) {
@@ -28,54 +30,56 @@ export const ProjectsController = {
     }
   },
 
-  async getByIdOrCode(req: Request, res: Response, next: NextFunction) {
+  async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await ProjectsService.getByIdOrCode(req.params.id);
-      if (!data) {
-        return res
-          .status(404)
-          .json({ ok: false, code: "NOT_FOUND", message: "Project not found" });
-      }
-      return res.json({ data });
+      const found = await stagesService.get(
+        req.params.projectId,
+        req.params.stageId
+      );
+      if (!found) return res.status(404).json({ ok: false, code: "NOT_FOUND" });
+      return res.json({ data: found });
     } catch (e) {
       return next(e);
     }
   },
 
   async create(req: Request, res: Response, next: NextFunction) {
-    const parsed = ProjectCreateSchema.safeParse(req.body);
+    const parsed = StageCreateSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({
         ok: false,
         code: "BAD_REQUEST",
-        message: "Invalid request body",
         details: parsed.error.flatten(),
       });
     }
     try {
-      const { projectManagerUserId, ...projectData } = parsed.data as any;
-      const created = await ProjectsService.create(projectData, {
-        projectManagerUserId,
-      });
+      const created = await stagesService.create(
+        req.params.projectId,
+        parsed.data as any
+      );
       return res.status(201).json({ data: created });
     } catch (e) {
-      console.log(e);
       return next(e);
     }
   },
 
   async update(req: Request, res: Response, next: NextFunction) {
-    const parsed = ProjectUpdateSchema.safeParse(req.body);
+    const parsed = stageUpdateSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({
         ok: false,
         code: "BAD_REQUEST",
-        message: "Invalid request body",
         details: parsed.error.flatten(),
       });
     }
     try {
-      const updated = await ProjectsService.update(req.params.id, parsed.data);
+      const updated = await stagesService.update(
+        req.params.projectId,
+        req.params.stageId,
+        parsed.data as any
+      );
+      if (!updated)
+        return res.status(404).json({ ok: false, code: "NOT_FOUND" });
       return res.json({ data: updated });
     } catch (e) {
       return next(e);
@@ -84,7 +88,12 @@ export const ProjectsController = {
 
   async remove(req: Request, res: Response, next: NextFunction) {
     try {
-      const deleted = await ProjectsService.remove(req.params.id);
+      const deleted = await stagesService.remove(
+        req.params.projectId,
+        req.params.stageId
+      );
+      if (!deleted)
+        return res.status(404).json({ ok: false, code: "NOT_FOUND" });
       return res.json({ data: deleted });
     } catch (e) {
       return next(e);

@@ -11,11 +11,12 @@ export function errorHandler(
   const traceId = (req.headers["x-request-id"] as string) || randomUUID;
 
   const mapped = mapPrismaError(err);
+  const userMessage = (err as any)?.meta?.userMessage;
   if (mapped) {
     return res.status(mapped.status).json({
       ok: false,
       code: mapped.code,
-      message: mapped.message,
+      message: userMessage || mapped.message,
       details: mapped.details,
       traceId,
     });
@@ -23,6 +24,8 @@ export function errorHandler(
 
   const status = (err as any)?.status ?? 500;
   const code = (err as any)?.code ?? "INTERNAL_ERROR";
-  const message = (err as any)?.message ?? "Something went wrong";
+  const message = userMessage
+    ? userMessage
+    : (err as any)?.message ?? "Something went wrong";
   res.status(status).json({ ok: false, code, message, traceId });
 }
