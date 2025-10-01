@@ -28,3 +28,15 @@
 - Turbo cache restore/save.
 - Type errors fail fast.
 - No snapshot updates in CI.
+
+## Projects & Stages API tests
+
+All tests run with existing Jest config (`apps/api/jest.config.ts`) and load env from `.env.test`.
+
+- Create Project with PM:
+  file: apps/api/src/test/projects.pm.spec.ts
+  checks: when `projectManagerUserId` is provided, a ProjectMember is created.
+
+- Stages ordering:
+  file: apps/api/src/test/stages.ordering.spec.ts
+  checks: append and middle insert keep contiguous `sortOrder`.

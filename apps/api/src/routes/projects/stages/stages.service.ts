@@ -122,11 +122,11 @@ export const stagesService = {
     patch: {
       code?: string;
       name?: string;
-      status?: any;
+      status?: StageStatus;
       description?: string;
       parentId?: string | null;
       sortOrder?: number;
-      plannedStart: Date | null;
+      plannedStart?: Date | null;
       plannedEnd?: Date | null;
       actualStart?: Date | null;
       actualEnd?: Date | null;
@@ -158,7 +158,7 @@ export const stagesService = {
           await tx.stage.updateMany({
             where: {
               projectId,
-              sortOrder: { gte: targetOrder, lte: existing.sortOrder },
+              sortOrder: { gte: targetOrder, lt: existing.sortOrder },
             },
             data: { sortOrder: { increment: 1 } },
           });

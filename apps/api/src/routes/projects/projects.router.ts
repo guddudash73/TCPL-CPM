@@ -16,7 +16,7 @@ router.post(
 );
 router.patch(
   "/:id",
-  requireAuth,
+  requireAuth,  
   requireRole("OWNER", "ADMIN", "PROJECT_MANAGER"),
   ProjectsController.update
 );

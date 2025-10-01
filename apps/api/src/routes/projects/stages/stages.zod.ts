@@ -1,12 +1,10 @@
 import { z } from "zod";
 import { StageStatus } from "@prisma/client";
 
-const toDate = z.preprocess((v) => {
-  if (v == null || v === "") return undefined;
-  if (v instanceof Date) return v;
-  const d = new Date(String(v));
-  return isNaN(d.getTime()) ? undefined : d;
-}, z.date().optional());
+const DateCoerced = z.preprocess(
+  (v) => (v == null || v === "" ? undefined : v),
+  z.coerce.date()
+);
 
 export const StageCreateSchema = z.object({
   code: z.string().min(1).max(64),
@@ -15,10 +13,10 @@ export const StageCreateSchema = z.object({
   description: z.string().max(1000).optional(),
   parentId: z.string().optional(),
   sortOrder: z.number().int().positive().optional(),
-  plannedStart: toDate,
-  plannedEnd: toDate,
-  actualStart: toDate,
-  actualEnd: toDate,
+  plannedStart: DateCoerced.optional(),
+  plannedEnd: DateCoerced.optional(),
+  actualStart: DateCoerced.optional(),
+  actualEnd: DateCoerced.optional(),
 });
 
 export const stageUpdateSchema = StageCreateSchema.partial();

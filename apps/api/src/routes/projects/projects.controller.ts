@@ -59,7 +59,6 @@ export const ProjectsController = {
       });
       return res.status(201).json({ data: created });
     } catch (e) {
-      console.log(e);
       return next(e);
     }
   },
