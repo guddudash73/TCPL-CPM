@@ -5,6 +5,7 @@ import {
   ProjectCreateSchema,
   ProjectUpdateSchema,
 } from "./projects.zod";
+import { mapPrismaError } from "../../utils/prismaError";
 
 export const ProjectsController = {
   async list(req: Request, res: Response, next: NextFunction) {
@@ -24,6 +25,8 @@ export const ProjectsController = {
         meta: { page: parsed.data.page, limit: parsed.data.limit, total },
       });
     } catch (e) {
+      const mapped = mapPrismaError(e);
+      if (mapped) return res.status(mapped.status).json(mapped.details);
       return next(e);
     }
   },
@@ -38,6 +41,8 @@ export const ProjectsController = {
       }
       return res.json({ data });
     } catch (e) {
+      const mapped = mapPrismaError(e);
+      if (mapped) return res.status(mapped.status).json(mapped.details);
       return next(e);
     }
   },
@@ -59,6 +64,8 @@ export const ProjectsController = {
       });
       return res.status(201).json({ data: created });
     } catch (e) {
+      const mapped = mapPrismaError(e);
+      if (mapped) return res.status(mapped.status).json(mapped.details);
       return next(e);
     }
   },
@@ -77,6 +84,8 @@ export const ProjectsController = {
       const updated = await ProjectsService.update(req.params.id, parsed.data);
       return res.json({ data: updated });
     } catch (e) {
+      const mapped = mapPrismaError(e);
+      if (mapped) return res.status(mapped.status).json(mapped.details);
       return next(e);
     }
   },
@@ -86,6 +95,8 @@ export const ProjectsController = {
       const deleted = await ProjectsService.remove(req.params.id);
       return res.json({ data: deleted });
     } catch (e) {
+      const mapped = mapPrismaError(e);
+      if (mapped) return res.status(mapped.status).json(mapped.details);
       return next(e);
     }
   },

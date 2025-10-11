@@ -20,6 +20,9 @@ jobs:
     env:
       TURBO_CACHE_DIR: .turbo
       TURBO_FILTER: "...[origin/main]"
+      NODE_ENV: test
+      DATABASE_URL: ${{secrets.NEON_TEST_DATABASE_URL}}
+      PRISMA_DATABASE_URL: ${{secrets.NEON_TEST_DATABASE_URL}}
 
     steps:
       - name: Checkout
@@ -47,6 +50,10 @@ jobs:
       - name: Prisma generate (apps/api)
         run: npm run db:generate -w apps/api
 
+      - name: Apply Prisma migration (Neon)
+        if: ${{env.DATABASE_URL != ''}}
+        run: npx prisma migrate deploy -w apps/api
+
       - name: Lint (affected)
         run: npx turbo run lint --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
 
@@ -54,6 +61,7 @@ jobs:
         run: npx turbo run check-types --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
 
       - name: Test (affected)
+        if: ${{env.DATABASE_URL != ''}}
         run: npx turbo run test --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
 
       - name: Build (affected)
