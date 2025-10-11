@@ -52,7 +52,7 @@ jobs:
 
       - name: Apply Prisma migration (Neon)
         if: ${{env.DATABASE_URL != ''}}
-        run: npx prisma migrate deploy -w apps/api
+        run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma -w apps/api
 
       - name: Lint (affected)
         run: npx turbo run lint --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
