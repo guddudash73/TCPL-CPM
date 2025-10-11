@@ -50,10 +50,12 @@ jobs:
       - name: Prisma generate (apps/api)
         run: npm run db:generate -w apps/api
 
+      - name: Debug Prisma schema path
+        run: ls -la apps/api/prisma
+
       - name: Apply Prisma migration (Neon)
         if: ${{env.DATABASE_URL != ''}}
-        working-directory: apps/api
-        run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+        run: npx prisma migrate deploy -w apps/api
 
       - name: Lint (affected)
         run: npx turbo run lint --cache-dir=$TURBO_CACHE_DIR --filter=$TURBO_FILTER
