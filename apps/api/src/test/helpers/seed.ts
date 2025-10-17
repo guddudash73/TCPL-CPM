@@ -4,6 +4,7 @@ import { ensureUserWithRole } from "./prisma-test";
 export const seedAdminAndViewer = async () => {
   const adminPass = await bcrypt.hash("Passw0rd!", 10);
   const viewerPass = await bcrypt.hash("Passw0rd!", 10);
+  const PMPass = await bcrypt.hash("Passw0rd!", 10);
 
   const admin = await ensureUserWithRole(
     "admin@tcpl.test",
@@ -19,5 +20,12 @@ export const seedAdminAndViewer = async () => {
     "Viewer Test"
   );
 
-  return { admin, normal };
+  const pm = await ensureUserWithRole(
+    "pm@tcpl.test",
+    PMPass,
+    "PROJECT_MANAGER",
+    "PM Test"
+  );
+
+  return { admin, normal, pm };
 };

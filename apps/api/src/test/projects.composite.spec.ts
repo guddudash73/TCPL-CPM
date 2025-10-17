@@ -9,6 +9,8 @@ const login = async (email: string, password: string) => {
   return res.body.tokens.accessToken as string;
 };
 
+jest.setTimeout(60_000);
+
 describe("Composite Projects Queries", () => {
   const prisma = getPrisma();
   const app = createApp();
@@ -44,11 +46,7 @@ describe("Composite Projects Queries", () => {
       include: { stage: true },
     });
     projectId = p.id;
-  });
-
-  afterAll(async () => {
-    await prisma.stage.deleteMany({ where: { projectId } });
-    await prisma.project.delete({ where: { id: projectId } });
+    console.log(projectId);
   });
 
   it("GET /projects/composite/:id/with-stages returns ordered stages and counts", async () => {
@@ -57,6 +55,7 @@ describe("Composite Projects Queries", () => {
       .set("Authorization", `Bearer ${token}`)
       .expect(200);
     const body = res.body.data;
+    console.log({ this: body });
     expect(body.stage.map((s: any) => s.sortOrder)).toEqual([1, 2, 3]);
     expect(body.stageCounts).toMatchObject({
       DONE: 1,
@@ -83,4 +82,9 @@ describe("Composite Projects Queries", () => {
       .expect(200);
     expect(Array.isArray(res.body.data)).toBe(true);
   });
+
+  // afterAll(async () => {
+  //   await prisma.stage.deleteMany({ where: { projectId } });
+  //   await prisma.project.delete({ where: { id: projectId } });
+  // });
 });

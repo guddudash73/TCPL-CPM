@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import type { ListQuery } from "./projects.zod";
-import { type ProjectStatus, type Currency, Prisma } from "@prisma/client";
+import { type ProjectStatus, type Currency } from "@prisma/client";
 
 const baseSelect = {
   id: true,
@@ -39,10 +39,11 @@ type CreateData = {
   state?: string | null;
   pincode?: string | null;
   country?: string | null;
+  projectManagerUserId?: string | null;
 };
 
 export const ProjectsService = {
-  async list(q: ListQuery) {
+  async list(q: ListQuery, userId?: string, userRole?: string) {
     const { page, limit, status, city, state } = q;
 
     const where: any = { AND: [] as any[] };
@@ -59,6 +60,11 @@ export const ProjectsService = {
     if (city) where.AND.push({ city: { equals: city, mode: "insensitive" } });
     if (state)
       where.AND.push({ state: { equals: state, mode: "insensitive" } });
+    if (userRole === "PROJECT_MANAGER") {
+      where.members = {
+        some: { userId: userId, role: { name: "PROJECT_MANAGER" } },
+      };
+    }
     if (!where.AND.length) delete where.AND;
 
     const [rows, total] = await prisma.$transaction([
@@ -105,19 +111,6 @@ export const ProjectsService = {
           err.code = "P2000";
           err.meta = {
             userMessage: 'Required role "PROJECT_MANAGER" not found',
-          };
-          throw err;
-        }
-
-        const user = await tx.user.findUnique({
-          where: { id: opts.projectManagerUserId },
-          select: { id: true },
-        });
-        if (!user) {
-          const err: any = new Error("DB validatiion");
-          err.code = "P2000";
-          err.meta = {
-            userMessage: "Selected projectManagerUserId does not exist",
           };
           throw err;
         }

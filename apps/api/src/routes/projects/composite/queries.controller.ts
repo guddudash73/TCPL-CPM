@@ -18,7 +18,15 @@ export class CompositeQueriesController {
 
   static async getPortfolio(req: Request, res: Response) {
     const q = PortfolioQuery.parse(req.query);
-    const result = await CompositeQueriesService.getPortfolio(q);
+    const user = req.auth;
+    if (!user) {
+      return res.status(401).json({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "The user is not logedin",
+      });
+    }
+    const result = await CompositeQueriesService.getPortfolio(q, user);
     return res.json({
       data: result.data,
       meta: { total: result.total, limit: result.limit, offset: result.offset },

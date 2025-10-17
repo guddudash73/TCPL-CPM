@@ -9,6 +9,8 @@ import { mapPrismaError } from "../../utils/prismaError";
 
 export const ProjectsController = {
   async list(req: Request, res: Response, next: NextFunction) {
+    const userId = req.auth?.id;
+    const userRole = req.auth?.userRole;
     const parsed = ListQuerySchema.safeParse(req.query);
     if (!parsed.success) {
       return res.status(400).json({
@@ -19,14 +21,18 @@ export const ProjectsController = {
       });
     }
     try {
-      const { rows, total } = await ProjectsService.list(parsed.data);
+      const { rows, total } = await ProjectsService.list(
+        parsed.data,
+        userId,
+        userRole
+      );
       return res.json({
         data: rows,
         meta: { page: parsed.data.page, limit: parsed.data.limit, total },
       });
     } catch (e) {
       const mapped = mapPrismaError(e);
-      if (mapped) return res.status(mapped.status).json(mapped.details);
+      if (mapped) return res.status(mapped.status).json({ error: mapped });
       return next(e);
     }
   },
@@ -42,7 +48,7 @@ export const ProjectsController = {
       return res.json({ data });
     } catch (e) {
       const mapped = mapPrismaError(e);
-      if (mapped) return res.status(mapped.status).json(mapped.details);
+      if (mapped) return res.status(mapped.status).json({ error: mapped });
       return next(e);
     }
   },
@@ -65,7 +71,8 @@ export const ProjectsController = {
       return res.status(201).json({ data: created });
     } catch (e) {
       const mapped = mapPrismaError(e);
-      if (mapped) return res.status(mapped.status).json(mapped.details);
+      console.log(e);
+      if (mapped) return res.status(mapped.status).json({ error: mapped });
       return next(e);
     }
   },
@@ -85,7 +92,7 @@ export const ProjectsController = {
       return res.json({ data: updated });
     } catch (e) {
       const mapped = mapPrismaError(e);
-      if (mapped) return res.status(mapped.status).json(mapped.details);
+      if (mapped) return res.status(mapped.status).json({ error: mapped });
       return next(e);
     }
   },
@@ -96,7 +103,7 @@ export const ProjectsController = {
       return res.json({ data: deleted });
     } catch (e) {
       const mapped = mapPrismaError(e);
-      if (mapped) return res.status(mapped.status).json(mapped.details);
+      if (mapped) return res.status(mapped.status).json({ error: mapped });
       return next(e);
     }
   },

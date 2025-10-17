@@ -1,4 +1,4 @@
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 
 export type ApiError = {
   status: number;
@@ -8,23 +8,23 @@ export type ApiError = {
 };
 
 export function mapPrismaError(err: unknown): ApiError | null {
-  if (err instanceof PrismaClientKnownRequestError) {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
     switch (err.code) {
       case "P2002":
         return {
           status: 409,
-          code: "CONFLICT",
-          message: "Resource already exists",
+          code: "UNIQUE_VIOLATION",
+          message: "A Record with this unique field already exists.",
           details: err.meta,
         };
       case "P2003":
         return {
-          status: 400,
-          code: "BAD_RELATION",
-          message: "Invalid relation reference.",
+          status: 409,
+          code: "FK_CONFLICT",
+          message: "Related resource not found or conflicts with existing data",
           details: err.meta,
         };
-      case "2025":
+      case "P2025":
         return {
           status: 404,
           code: "NOT_FOUND",

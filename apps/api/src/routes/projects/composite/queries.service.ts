@@ -28,21 +28,31 @@ export class CompositeQueriesService {
     };
   }
 
-  static async getPortfolio(params: {
-    pmId?: string;
-    status?: ProjectStatus;
-    q?: string;
-    limit: number;
-    offset: number;
-  }) {
-    const { pmId, status, q, limit, offset } = params;
+  static async getPortfolio(
+    params: {
+      status?: ProjectStatus;
+      q?: string;
+      limit: number;
+      offset: number;
+    },
+    user: { roleId: string; id: string }
+  ) {
+    const { status, q, limit, offset } = params;
+    const userRole = await prisma.role.findUnique({
+      where: {
+        id: user.roleId,
+      },
+      select: {
+        name: true,
+      },
+    });
 
     const where: any = {};
     if (status) where.status = status;
     if (q) where.name = { contains: q, mode: "insensitive" };
-    if (pmId) {
+    if (userRole?.name === "PROJECT_MANAGER") {
       where.members = {
-        some: { userId: pmId, role: { name: "PROJECT_MANAGER" } },
+        some: { userId: user.id, role: { name: "PROJECT_MANAGER" } },
       };
     }
 

@@ -8,6 +8,8 @@ const login = async (email: string, password: string) => {
   return { app, token: res.body.tokens.accessToken as string };
 };
 
+jest.setTimeout(60_000);
+
 describe("Stages ordering (insert/reorder/delete) within project", () => {
   let app: ReturnType<typeof createApp>;
   let token: string;

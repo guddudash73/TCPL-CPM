@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccess } from "../auth/jwt";
 
-export type AuthUser = { id: string; roleId: string; emailLower: string };
+export type AuthUser = {
+  id: string;
+  roleId: string;
+  emailLower: string;
+  userRole?: string;
+};
 
 declare global {
   namespace Express {
@@ -24,6 +29,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
       roleId: claims.roleId,
       emailLower: claims.emailLower,
     };
+
     return next();
   } catch {
     return res.status(401).json({ message: "invalid or expired token" });

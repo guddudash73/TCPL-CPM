@@ -27,7 +27,8 @@
     "db:studio": "prisma studio --schema=./prisma/schema.prisma",
     "db:studio:test": "dotenv -e ./.env.test -- prisma studio --schema=./prisma/schema.prisma",
     "db:seed": "tsx ./prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force --skip-seed"
+    "db:reset": "prisma migrate reset --force --skip-seed",
+    "k6:smoke": "k6 run k6/composite_smoke.js"
   },
   "prisma": {
     "seed": "tsx /prisma/seed.ts"
