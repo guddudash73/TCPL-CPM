@@ -6,17 +6,12 @@ import { requireAccess } from "../../middlewares/requireAccess";
 
 const router = Router();
 
-router.get(
-  "/",
-  requireAuth,
-  requireAccess({ roles: ["PROJECT_MANAGER"] }),
-  ProjectsController.list
-);
+router.get("/", requireAuth, requireAccess(), ProjectsController.list);
 
 router.get(
   "/:id",
   requireAuth,
-  requireAccess,
+  requireAccess(),
   ProjectsController.getByIdOrCode
 );
 

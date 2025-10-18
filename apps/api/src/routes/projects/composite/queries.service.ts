@@ -1,5 +1,5 @@
 import { prisma } from "../../../lib/prisma";
-import { StageStatus, ProjectStatus, Stage } from "@prisma/client";
+import { StageStatus, ProjectStatus } from "@prisma/client";
 
 export class CompositeQueriesService {
   static async getProjectWithStages(projectId: string) {

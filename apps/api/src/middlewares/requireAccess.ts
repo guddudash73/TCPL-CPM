@@ -7,7 +7,7 @@ export const Params = z.object({
   id: z.string().cuid("id must be a valid CUID").optional(),
 });
 
-type UserRole =
+export type UserRole =
   | "OWNER"
   | "ADMIN"
   | "PROJECT_MANAGER"
@@ -22,7 +22,6 @@ type AuthUser = {
 };
 type RequireAccessOptions = {
   roles?: Array<UserRole>;
-  allowViewer?: boolean;
 };
 
 function isElevated(

@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccess } from "../auth/jwt";
+import { UserRole } from "./requireAccess";
 
 export type AuthUser = {
   id: string;
   roleId: string;
   emailLower: string;
-  userRole?: string;
+  userRole?: UserRole;
 };
 
 declare global {
