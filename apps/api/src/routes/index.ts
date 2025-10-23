@@ -5,6 +5,8 @@ import authRouter from "../auth/auth.router";
 import projectRouter from "../routes/projects/projects.router";
 import stagesRouter from "./projects/stages/stages.router";
 import compositeRouter from "./projects/composite/composite.router";
+import materialsRouter from "./materials/material.router";
+import boqRouter from "./boq/boq.router";
 
 const router = Router();
 
@@ -14,5 +16,7 @@ router.use("/auth", authRouter);
 router.use("/projects", projectRouter);
 router.use("/projects/composite", compositeRouter);
 router.use("/projects/:projectId/stages", stagesRouter); //Nested stages under a project (mergeParams in router preserves :projectId)
+router.use("/materials", materialsRouter);
+router.use("/", boqRouter);
 
 export default router;

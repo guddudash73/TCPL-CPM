@@ -10,17 +10,23 @@ router.get(
   "/:projectId/with-stages",
   requireAuth,
   requireRole("ADMIN", "PROJECT_MANAGER", "VIEWER"),
-  requireAccess,
+  requireAccess({ allowViewer: true }),
   CompositeQueriesController.getProjectWithStage
 );
 
 router.get(
   "/portfolio",
   requireAuth,
+  requireAccess({ allowViewer: true }),
   requireRole("ADMIN", "PROJECT_MANAGER", "VIEWER"),
   CompositeQueriesController.getPortfolio
 );
 
-router.get("/search", requireAuth, CompositeQueriesController.search);
+router.get(
+  "/search",
+  requireAuth,
+  requireAccess({ allowViewer: true }),
+  CompositeQueriesController.search
+);
 
 export default router;

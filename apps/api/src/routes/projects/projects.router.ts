@@ -11,7 +11,7 @@ router.get("/", requireAuth, requireAccess(), ProjectsController.list);
 router.get(
   "/:id",
   requireAuth,
-  requireAccess(),
+  requireAccess({ allowViewer: true }),
   ProjectsController.getByIdOrCode
 );
 
@@ -37,7 +37,10 @@ router.delete(
 router.get(
   "/:id/secure-probe",
   requireAuth,
-  requireAccess({ roles: ["OWNER", "ADMIN", "PROJECT_MANAGER"] }),
+  requireAccess({
+    roles: ["OWNER", "ADMIN", "PROJECT_MANAGER"],
+    allowViewer: true,
+  }),
   (_req, res) => res.status(200).json({ ok: true })
 );
 

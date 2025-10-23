@@ -67,14 +67,14 @@ async function upsertUser(
 //     },
 //   });
 
-  // await prisma.project.upsert({
-  //   where: { name: "Phase-2 Expansion" },
-  //   update: {},
-  //   create: {
-  //     name: "Phase-2 Expansion",
-  //     description: "additional sample project for demos",
-  //   },
-  // });
+// await prisma.project.upsert({
+//   where: { name: "Phase-2 Expansion" },
+//   update: {},
+//   create: {
+//     name: "Phase-2 Expansion",
+//     description: "additional sample project for demos",
+//   },
+// });
 // }
 
 async function main() {

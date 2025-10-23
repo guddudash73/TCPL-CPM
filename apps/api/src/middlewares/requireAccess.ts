@@ -22,6 +22,7 @@ type AuthUser = {
 };
 type RequireAccessOptions = {
   roles?: Array<UserRole>;
+  allowViewer?: Boolean;
 };
 
 function isElevated(
@@ -34,10 +35,9 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
   const explicitRoles = opts.roles ? new Set<UserRole>(opts.roles) : null;
 
   return async function (req: Request, res: Response, next: NextFunction) {
-    console.log("enter");
     try {
       const auth = req.auth as AuthUser | undefined;
-      console.log(auth);
+
       if (!auth) {
         return res.status(401).json({
           ok: false,
@@ -45,7 +45,7 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
           message: "Not authenticated",
         });
       }
-      console.log("before");
+
       const role = await prisma.role.findUnique({
         where: {
           id: req.auth?.roleId,
@@ -54,7 +54,6 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
           name: true,
         },
       });
-      console.log("bafter");
 
       const userRole = role?.name as UserRole | undefined;
 
@@ -67,9 +66,21 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
       if (projectId) {
         const isMember =
           (await prisma.project.count({
-            where: { id: projectId, members: { some: { userId: auth.id } } },
+            where: {
+              id: projectId,
+              members: {
+                some: { userId: auth.id },
+              },
+            },
           })) > 0;
-        console.log("fromt the projectId");
+
+        if (!opts.allowViewer && role?.name === "VIEWER") {
+          return res.status(403).json({
+            ok: false,
+            code: "FORBIDDEN",
+            message: "Viewer is not allowed to do this action",
+          });
+        }
 
         if (isMember) return next();
       }
@@ -92,7 +103,6 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
             message: "Insufficient role for this action",
           });
         }
-        console.log(req.auth.userRole);
         return next();
       }
 

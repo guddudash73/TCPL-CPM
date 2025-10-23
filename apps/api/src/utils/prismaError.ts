@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { string } from "zod/v4";
 
 export type ApiError = {
   status: number;
@@ -40,5 +41,15 @@ export function mapPrismaError(err: unknown): ApiError | null {
         };
     }
   }
+
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    return {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Invalid request payload.",
+      details: String(err.message),
+    };
+  }
+
   return null;
 }
