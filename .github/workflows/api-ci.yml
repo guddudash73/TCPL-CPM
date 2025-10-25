@@ -26,6 +26,7 @@ concurrency:
 
 jobs:
   api:
+    name: API • build+test
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -49,7 +50,7 @@ jobs:
       NODE_ENV: test
       CI: "true"
 
-      JWT_SECRET: "ci-test-secret"
+      JWT_SECRET: "ci_test_secret_0123456789abcdef_0123456789abcdef_012345"
       JWT_EXPIRES_IN: "15m"
       REFRESH_TOKEN_TTL: "7d"
 
