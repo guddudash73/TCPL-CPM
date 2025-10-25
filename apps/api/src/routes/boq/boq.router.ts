@@ -2,7 +2,8 @@ import { Router } from "express";
 import { requireAuth } from "../../middlewares/requireAuth";
 import { requireAccess } from "../../middlewares/requireAccess";
 import * as ctrl from "./boq.controller";
-import { requireRole } from "../../middlewares/requireRole";
+import { validate } from "../../middlewares/validate";
+import { BoqBatchQuerySchema } from "./boq.schema";
 
 const router = Router();
 
@@ -24,6 +25,14 @@ router.delete(
   requireAuth,
   writeGuard,
   ctrl.remove
+);
+
+router.post(
+  "/projects/:projectId/boq/batch",
+  requireAuth,
+  writeGuard,
+  validate({ query: BoqBatchQuerySchema }),
+  ctrl.batch
 );
 
 export default router;

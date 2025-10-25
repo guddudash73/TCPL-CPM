@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { string } from "zod/v4";
+import { ZodError } from "zod";
 
 export type ApiError = {
   status: number;
@@ -9,6 +9,15 @@ export type ApiError = {
 };
 
 export function mapPrismaError(err: unknown): ApiError | null {
+  if (err instanceof ZodError) {
+    return {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Validation failed",
+      details: err.issues,
+    };
+  }
+
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     switch (err.code) {
       case "P2002":

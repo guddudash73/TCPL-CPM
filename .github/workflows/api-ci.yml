@@ -1,0 +1,73 @@
+name: api-ci
+
+on:
+  pull_request:
+    paths:
+      - "apps/api/**"
+      - "packages/**"
+      - "turbo.json"
+      - "package.json"
+      - "package-lock.json"
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+      - "packages/**"
+      - "turbo.json"
+      - "package.json"
+      - "package-lock.json"
+
+concurrency:
+  group: api-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16
+        ports: ["5432:5432"]
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tcpl_cpm_test
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tcpl_cpm_test
+      PRISMA_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tcpl_cpm_test
+      NODE_ENV: test
+      CI: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Generate & Migrate
+        run: |
+          npx prisma generate -w apps/api
+          npx prisma migrate deploy -w apps/api
+
+      - name: Seed (optional)
+        run: npx prisma db seed -w apps/api || true
+
+      - name: Build API
+        run: npm run build -w apps/api
+
+      - name: Test API (runInBand)
+        run: npm run test -w apps/api -- --runInBand
