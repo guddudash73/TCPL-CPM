@@ -1,6 +1,7 @@
 name: api-ci
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - "apps/api/**"
@@ -60,16 +61,19 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Generate & Migrate
-        run: |
-          npx prisma generate --schema=apps/api/prisma/schema.prisma
-          npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+      - name: Prisma Generate
+        run: npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+      - name: Prisma Migrate (deploy)
+        run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
 
       - name: Seed (optional)
-        run: npx prisma db seed -schema=apps/api/prisma/schema.prisma || true
+        run: npx prisma db seed --schema=apps/api/prisma/schema.prisma || true
 
-      - name: Build API
-        run: npm run build -w apps/api
+      - name: Build (API + deps via Turbo)
+        run: |
+          npx turbo run build --filter=@tcpl-cpm/api^...
+          npx turbo run build --filter=@tcpl-cpm/api
 
       - name: Test API (runInBand)
         run: npm run test -w apps/api -- --runInBand
