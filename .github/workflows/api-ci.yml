@@ -8,6 +8,7 @@ on:
       - "turbo.json"
       - "package.json"
       - "package-lock.json"
+      - ".github/workflows/**"
   push:
     branches: [main]
     paths:
@@ -16,6 +17,7 @@ on:
       - "turbo.json"
       - "package.json"
       - "package-lock.json"
+      - ".github/workflows/**"
 
 concurrency:
   group: api-ci-${{ github.ref }}
