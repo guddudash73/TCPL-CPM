@@ -58,17 +58,13 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Prisma Generate
-        run: npx prisma generate
-        working-directory: apps/api
-
-      - name: Prisma Migrate (deploy)
-        run: npx prisma migrate deploy
-        working-directory: apps/api
+      - name: Generate & Migrate
+        run: |
+          npx prisma generate --schema=apps/api/prisma/schema.prisma
+          npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
 
       - name: Seed (optional)
-        run: npx prisma db seed || true
-        working-directory: apps/api
+        run: npx prisma db seed -schema=apps/api/prisma/schema.prisma || true
 
       - name: Build API
         run: npm run build -w apps/api
