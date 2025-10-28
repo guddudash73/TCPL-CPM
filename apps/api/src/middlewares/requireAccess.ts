@@ -3,8 +3,17 @@ import { prisma } from "../lib/prisma";
 import { z, ZodError } from "zod";
 
 export const Params = z.object({
-  projectId: z.string().cuid("projectId must be a valid CUID").optional(),
-  id: z.string().cuid("id must be a valid CUID").optional(),
+  projectId: z
+    .string()
+    .regex(
+      /^(c[a-z0-9]{24}|[0-9a-fA-F-]{36})$/,
+      "projectId must be cuid or uuid"
+    )
+    .optional(),
+  id: z
+    .string()
+    .regex(/^(c[a-z0-9]{24}|[0-9a-fA-F-]{36})$/, "id must be cuid or uuid")
+    .optional(),
 });
 
 export type UserRole =
@@ -18,21 +27,37 @@ type AuthUser = {
   id: string;
   roleId?: string;
   emailLower?: string;
-  userRole?: string;
+  userRole?: UserRole;
 };
 type RequireAccessOptions = {
   roles?: Array<UserRole>;
-  allowViewer?: Boolean;
+  allowViewer?: boolean;
 };
 
-function isElevated(
-  role: UserRole | undefined
-): role is Extract<UserRole, "OWNER" | "ADMIN"> {
-  return role === "OWNER" || role === "ADMIN";
+const roleCache = new Map<string, { name: UserRole; exp: number }>();
+const ROLE_TTL_MS = 60_000;
+
+async function getUserRole(roleId?: string): Promise<UserRole | undefined> {
+  if (!roleId) return undefined;
+  const now = Date.now();
+  const hit = roleCache.get(roleId);
+  if (hit && hit.exp > now) return hit.name;
+  const role = await prisma.role.findUnique({
+    where: { id: roleId },
+    select: { name: true },
+  });
+  if (!role) return undefined;
+  const name = role.name as UserRole;
+  roleCache.set(roleId, { name, exp: now + ROLE_TTL_MS });
+  return name;
+}
+
+function isElevated(roles?: UserRole): boolean {
+  return roles === "OWNER" || roles === "ADMIN";
 }
 
 export function requireAccess(opts: RequireAccessOptions = {}) {
-  const explicitRoles = opts.roles ? new Set<UserRole>(opts.roles) : null;
+  const explicitRoles = opts.roles ? new Set<UserRole>(opts.roles) : undefined;
 
   return async function (req: Request, res: Response, next: NextFunction) {
     try {
@@ -46,35 +71,50 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
         });
       }
 
-      const role = await prisma.role.findUnique({
-        where: {
-          id: req.auth?.roleId,
-        },
-        select: {
-          name: true,
-        },
-      });
+      // const role = await prisma.role.findUnique({
+      //   where: {
+      //     id: req.auth?.roleId,
+      //   },
+      //   select: {
+      //     name: true,
+      //   },
+      // });
 
-      const userRole = role?.name as UserRole | undefined;
+      const userRole = await getUserRole(auth.roleId);
 
       if (isElevated(userRole)) {
         return next();
       }
 
-      const parsed = Params.parse(req.params);
-      const projectId = parsed.projectId ?? parsed.id;
-      if (projectId) {
+      const parsed = Params.safeParse(req.params);
+      if (!parsed.success) {
+        return res.status(400).json({
+          ok: false,
+          code: "BAD_REQUEST",
+          message: "Invalid route parameters",
+          details: parsed.error.flatten(),
+        });
+      }
+      const { projectId, id } = parsed.data;
+      const projectScope = projectId ?? id;
+
+      if (projectScope) {
         const isMember =
           (await prisma.project.count({
-            where: {
-              id: projectId,
-              members: {
-                some: { userId: auth.id },
-              },
-            },
+            where: { id: projectScope, members: { some: { userId: auth.id } } },
           })) > 0;
 
-        if (!opts.allowViewer && role?.name === "VIEWER") {
+        if (!isMember) {
+          return res
+            .status(403)
+            .json({
+              ok: false,
+              code: "FORBIDDEN",
+              message: "You do not have access to this project",
+            });
+        }
+
+        if (userRole === "VIEWER" && !opts.allowViewer) {
           return res.status(403).json({
             ok: false,
             code: "FORBIDDEN",
@@ -82,38 +122,30 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
           });
         }
 
-        if (isMember) return next();
+        if (explicitRoles && (!userRole || !explicitRoles.has(userRole))) {
+          return res
+            .status(403)
+            .json({
+              ok: false,
+              code: "FORBIDDEN",
+              message: "Insufficient role for this action",
+            });
+        }
+
+        return next();
       }
 
-      if (!projectId) {
-        if (!req.auth) {
-          return res.status(401).json({
-            ok: false,
-            code: "UNAUTHORIZED",
-            message: "Not authenticated",
-          });
-        }
-        req.auth.userRole = userRole;
-
-        if (explicitRoles) {
-          if (userRole && explicitRoles.has(userRole)) return next();
-          return res.status(403).json({
+      if (explicitRoles) {
+        if (userRole && explicitRoles.has(userRole)) return next();
+        return res
+          .status(403)
+          .json({
             ok: false,
             code: "FORBIDDEN",
             message: "Insufficient role for this action",
           });
-        }
-        return next();
       }
-
-      // if (allowViewer) {
-      // }
-
-      return res.status(403).json({
-        ok: false,
-        code: "FORBIDDEN",
-        message: "You do not have access to this project",
-      });
+      return next();
     } catch (e) {
       if (e instanceof ZodError) {
         return res.status(400).json({
@@ -123,12 +155,13 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
           details: e.flatten(),
         });
       }
-
-      return res.status(500).json({
-        ok: false,
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Internal server error",
-      });
+      return res
+        .status(500)
+        .json({
+          ok: false,
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Internal server error",
+        });
     }
   };
 }

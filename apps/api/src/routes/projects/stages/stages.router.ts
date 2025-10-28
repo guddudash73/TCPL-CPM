@@ -1,29 +1,47 @@
 import { Router } from "express";
 import { requireAuth } from "../../../middlewares/requireAuth";
-import { requireRole } from "../../../middlewares/requireRole";
+// import { requireRole } from "../../../middlewares/requireRole";
 import { StagesController } from "./stages.controller";
+import { requireAccess } from "../../../middlewares/requireAccess";
 
 const router = Router({ mergeParams: true });
 
-router.get("/", requireAuth, StagesController.list);
-router.get("/:stageId", requireAuth, StagesController.get);
+router.get(
+  "/",
+  requireAuth,
+  requireAccess({ allowViewer: true }),
+  StagesController.list
+);
+router.get(
+  "/:stageId",
+  requireAuth,
+  requireAccess({ allowViewer: true }),
+  StagesController.get
+);
+
+const writeGuard = requireAccess({
+  roles: ["OWNER", "ADMIN", "PROJECT_MANAGER"],
+});
 
 router.post(
   "/",
   requireAuth,
-  requireRole("OWNER", "ADMIN", "PROJECT_MANAGER"),
+  writeGuard,
+  // requireRole("OWNER", "ADMIN", "PROJECT_MANAGER"),
   StagesController.create
 );
 router.patch(
   "/:stageId",
   requireAuth,
-  requireRole("OWNER", "ADMIN", "PROJECT_MANAGER"),
+  writeGuard,
+  // requireRole("OWNER", "ADMIN", "PROJECT_MANAGER"),
   StagesController.update
 );
 router.delete(
   "/:stageId",
   requireAuth,
-  requireRole("OWNER", "ADMIN", "PROJECT_MANAGER"),
+  writeGuard,
+  // requireRole("OWNER", "ADMIN", "PROJECT_MANAGER"),
   StagesController.remove
 );
 
