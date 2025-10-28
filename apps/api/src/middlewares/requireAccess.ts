@@ -52,8 +52,8 @@ async function getUserRole(roleId?: string): Promise<UserRole | undefined> {
   return name;
 }
 
-function isElevated(roles?: UserRole): boolean {
-  return roles === "OWNER" || roles === "ADMIN";
+function isElevated(role?: UserRole): boolean {
+  return role === "OWNER" || role === "ADMIN";
 }
 
 export function requireAccess(opts: RequireAccessOptions = {}) {
@@ -82,6 +82,8 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
 
       const userRole = await getUserRole(auth.roleId);
 
+      if (req.auth) req.auth.userRole = userRole;
+
       if (isElevated(userRole)) {
         return next();
       }
@@ -105,13 +107,11 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
           })) > 0;
 
         if (!isMember) {
-          return res
-            .status(403)
-            .json({
-              ok: false,
-              code: "FORBIDDEN",
-              message: "You do not have access to this project",
-            });
+          return res.status(403).json({
+            ok: false,
+            code: "FORBIDDEN",
+            message: "You do not have access to this project",
+          });
         }
 
         if (userRole === "VIEWER" && !opts.allowViewer) {
@@ -123,13 +123,11 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
         }
 
         if (explicitRoles && (!userRole || !explicitRoles.has(userRole))) {
-          return res
-            .status(403)
-            .json({
-              ok: false,
-              code: "FORBIDDEN",
-              message: "Insufficient role for this action",
-            });
+          return res.status(403).json({
+            ok: false,
+            code: "FORBIDDEN",
+            message: "Insufficient role for this action",
+          });
         }
 
         return next();
@@ -137,13 +135,11 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
 
       if (explicitRoles) {
         if (userRole && explicitRoles.has(userRole)) return next();
-        return res
-          .status(403)
-          .json({
-            ok: false,
-            code: "FORBIDDEN",
-            message: "Insufficient role for this action",
-          });
+        return res.status(403).json({
+          ok: false,
+          code: "FORBIDDEN",
+          message: "Insufficient role for this action",
+        });
       }
       return next();
     } catch (e) {
@@ -155,13 +151,11 @@ export function requireAccess(opts: RequireAccessOptions = {}) {
           details: e.flatten(),
         });
       }
-      return res
-        .status(500)
-        .json({
-          ok: false,
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Internal server error",
-        });
+      return res.status(500).json({
+        ok: false,
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Internal server error",
+      });
     }
   };
 }
